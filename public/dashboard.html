@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Laboratorio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <h2 id="welcomeTitle">Bienvenido</h2>
+        <button onclick="logout()">Cerrar Sesión</button>
+    </nav>
+    <div id="content">
+        <h3>Cargando...</h3>
+    </div>
+
+    <script>
+        // Verificar si el usuario está autenticado
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            window.location.href = '/index.html';
+        }
+
+        // Actualizar el título de bienvenida
+        document.getElementById('welcomeTitle').innerText = `Bienvenido, ${user.nombre}`;
+        
+        // Mostrar contenido según el rol
+        const content = document.getElementById('content');
+        if (user.rol === 'admin') {
+            content.innerHTML = `
+                <h3>📋 Panel de Administrador</h3>
+                <p>Puedes gestionar los resultados de exámenes de los pacientes.</p>
+                <button style="background: #27ae60; margin-top: 1rem; width: auto; padding: 0.8rem 1.5rem;">
+                    + Subir Nuevo Resultado
+                </button>
+            `;
+        } else {
+            content.innerHTML = `
+                <h3>📊 Mis Exámenes</h3>
+                <p>Aquí puedes ver el estado de tus exámenes y resultados.</p>
+                <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-left: 4px solid #667eea;">
+                    <p><strong>Estado:</strong> Sin exámenes pendientes</p>
+                </div>
+            `;
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.clear();
+                window.location.href = '/index.html';
+            }
+        }
+    </script>
+</body>
+</html>
