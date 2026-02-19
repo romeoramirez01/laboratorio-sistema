@@ -17,6 +17,9 @@ app.get('/', (req, res) => {
 // Rutas de autenticación
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
+// Rutas para pacientes, signos y exámenes (admin/doctor)
+const patientRoutes = require('./routes/patientRoutes');
+app.use('/api/admin', patientRoutes);
 
 // Rutas de exámenes
 const examenRoutes = require('./routes/examenRoutes');

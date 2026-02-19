@@ -16,6 +16,65 @@ async function main(){
     )`);
     console.log('Tabla usuarios creada/confirmada');
 
+    // 4) Crear tabla pacientes
+    await pool.query(`CREATE TABLE IF NOT EXISTS pacientes (
+      id SERIAL PRIMARY KEY,
+      dui VARCHAR(20) UNIQUE,
+      nombres TEXT NOT NULL,
+      apellidos TEXT NOT NULL,
+      fecha_nacimiento DATE,
+      telefono VARCHAR(30),
+      correo TEXT UNIQUE,
+      created_at TIMESTAMP DEFAULT now()
+    )`);
+    console.log('Tabla pacientes creada/confirmada');
+
+    // 5) Crear tabla signos_vitales
+    await pool.query(`CREATE TABLE IF NOT EXISTS signos_vitales (
+      id SERIAL PRIMARY KEY,
+      paciente_id INTEGER NOT NULL REFERENCES pacientes(id) ON DELETE CASCADE,
+      presion_arterial TEXT,
+      frecuencia_cardiaca INTEGER,
+      temperatura NUMERIC,
+      peso NUMERIC,
+      altura NUMERIC,
+      notas TEXT,
+      registrado_por INTEGER REFERENCES usuarios(id),
+      created_at TIMESTAMP DEFAULT now()
+    )`);
+    console.log('Tabla signos_vitales creada/confirmada');
+
+    // 6) Crear catálogo de exámenes y resultados
+    await pool.query(`CREATE TABLE IF NOT EXISTS catalogo_examenes (
+      id SERIAL PRIMARY KEY,
+      codigo TEXT UNIQUE NOT NULL,
+      nombre TEXT NOT NULL,
+      descripcion TEXT
+    )`);
+    console.log('Tabla catalogo_examenes creada/confirmada');
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS resultados_examenes (
+      id SERIAL PRIMARY KEY,
+      paciente_id INTEGER NOT NULL REFERENCES pacientes(id) ON DELETE CASCADE,
+      examen_id INTEGER NOT NULL REFERENCES catalogo_examenes(id) ON DELETE CASCADE,
+      resultados JSONB,
+      registrado_por INTEGER REFERENCES usuarios(id),
+      created_at TIMESTAMP DEFAULT now()
+    )`);
+    console.log('Tabla resultados_examenes creada/confirmada');
+
+    // 7) Seed: algunos exámenes comunes si no existen
+    const exams = [
+      ['CBC','Hemograma completo','Recuento de células sanguíneas'],
+      ['GLU','Glucosa en sangre','Glucosa plasmática en ayunas'],
+      ['UO','Orina completa','Examen general de orina']
+    ];
+    for (const [codigo, nombre, descripcion] of exams) {
+      await pool.query(`INSERT INTO catalogo_examenes (codigo,nombre,descripcion)
+        SELECT $1,$2,$3 WHERE NOT EXISTS (SELECT 1 FROM catalogo_examenes WHERE codigo=$1)`, [codigo,nombre,descripcion]);
+    }
+    console.log('Catálogo de exámenes seed completado');
+
     // 2) Crear admin si no existe
     const adminEmail = 'admin@example.com';
     const adminPass = 'admin123';
