@@ -2,40 +2,53 @@ const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Roles permitidos en la aplicación
+const ALLOWED_ROLES = ['paciente', 'admin', 'doctor'];
+
 const registrarUsuario = async (req, res) => {
     const { nombre, email, password, rol } = req.body;
 
     try {
+        // Seguridad extra: verificar server-side que quien hace la petición es admin
+        // (esto es defensivo; las rutas ya usan `verificarToken` y `esAdmin`)
+        if (!req.usuario || req.usuario.rol !== 'admin') {
+            return res.status(403).json({ message: 'Acceso prohibido. Solo administradores pueden crear usuarios.' });
+        }
+
+        // Validar campos obligatorios
+        if (!nombre || !email || !password) {
+            return res.status(400).json({ message: 'Faltan campos obligatorios: nombre, email o password.' });
+        }
+
+        // Validar rol y usar valor por defecto
+        const roleToSet = rol && ALLOWED_ROLES.includes(rol) ? rol : 'paciente';
+
         // 1. Verificar si el usuario ya existe
-        const usuarioExiste = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
-        
+        const usuarioExiste = await pool.query('SELECT id FROM usuarios WHERE email = $1', [email]);
         if (usuarioExiste.rows.length > 0) {
-            return res.status(400).json({ message: "El correo ya está registrado" });
+            return res.status(400).json({ message: 'El correo ya está registrado' });
         }
 
         // 2. Encriptar la contraseña
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // 3. Guardar en la base de datos
+        // 3. Guardar en la base de datos (laboratorio_db)
         const nuevoUsuario = await pool.query(
             'INSERT INTO usuarios (nombre, email, password, rol) VALUES ($1, $2, $3, $4) RETURNING id, nombre, email, rol',
-            [nombre, email, hashedPassword, rol || 'paciente']
+            [nombre, email, hashedPassword, roleToSet]
         );
 
         res.status(201).json({
-            message: "Usuario creado con éxito",
+            message: 'Usuario creado con éxito',
             user: nuevoUsuario.rows[0]
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error en el servidor al registrar" });
+        console.error(error && error.stack ? error.stack : error);
+        res.status(500).json({ message: 'Error en el servidor al registrar' });
     }
 };
-
-module.exports = { registrarUsuario };
-
 
 const loginUsuario = async (req, res) => {
     const { email, password } = req.body;
@@ -45,7 +58,7 @@ const loginUsuario = async (req, res) => {
         const userQuery = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
         
         if (userQuery.rows.length === 0) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+            return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         const usuario = userQuery.rows[0];
@@ -54,7 +67,7 @@ const loginUsuario = async (req, res) => {
         const validPassword = await bcrypt.compare(password, usuario.password);
         
         if (!validPassword) {
-            return res.status(401).json({ message: "Contraseña incorrecta" });
+            return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
         // 3. Crear el Token (Payload: id y rol)
@@ -66,7 +79,7 @@ const loginUsuario = async (req, res) => {
 
         // 4. Responder con éxito y el Token
         res.json({
-            message: "Login exitoso",
+            message: 'Login exitoso',
             token,
             user: {
                 id: usuario.id,
@@ -76,8 +89,8 @@ const loginUsuario = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error en el servidor al iniciar sesión" });
+        console.error(error && error.stack ? error.stack : error);
+        res.status(500).json({ message: 'Error en el servidor al iniciar sesión' });
     }
 };
 
