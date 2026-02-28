@@ -10,14 +10,67 @@
     <div class="login-container">
         <div>
             <h2>🔬 Sistema de Laboratorio</h2>
-            <form id="loginForm">
-                <input type="email" id="email" placeholder="Correo electrónico" required>
-                <input type="password" id="password" placeholder="Contraseña" required>
-                <button type="submit">Ingresar</button>
-            </form>
-            <p id="message"></p>
+            
+            <!-- Formulario de Login -->
+            <div id="loginSection">
+                <form id="loginForm">
+                    <input type="email" id="email" placeholder="Correo electrónico" required>
+                    <input type="password" id="password" placeholder="Contraseña" required>
+                    <button type="submit">Ingresar</button>
+                </form>
+                <p id="message"></p>
+                <p style="text-align: center; margin-top: 1rem;">
+                    <a href="#" onclick="mostrarRecuperacion(); return false;" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </p>
+            </div>
+            
+            <!-- Formulario de Recuperación de Contraseña -->
+            <div id="recuperacionSection" style="display: none;">
+                <h3>Recuperar Contraseña</h3>
+                
+                <!-- Paso 1: Solicitar correo -->
+                <div id="paso1" style="display: block;">
+                    <p style="font-size: 0.9rem; color: #666;">Ingresa tu email y recibirás un código de recuperación</p>
+                    <form id="solicitudRecuperacionForm">
+                        <input type="email" id="emailRecuperacion" placeholder="Tu correo electrónico" required>
+                        <button type="submit">Enviar Código</button>
+                    </form>
+                    <p id="paso1Message"></p>
+                </div>
+                
+                <!-- Paso 2: Verificar código -->
+                <div id="paso2" style="display: none;">
+                    <p style="font-size: 0.9rem; color: #666;">Ingresa el código que recibiste en tu correo</p>
+                    <form id="verificarCodigoForm">
+                        <input type="text" id="codigoRecuperacion" placeholder="Código de 6 dígitos" maxlength="6" required>
+                        <button type="submit">Verificar Código</button>
+                    </form>
+                    <p id="paso2Message"></p>
+                </div>
+                
+                <!-- Paso 3: Cambiar contraseña -->
+                <div id="paso3" style="display: none;">
+                    <p style="font-size: 0.9rem; color: #666;">Crea una nueva contraseña</p>
+                    <form id="cambiarContrasenaForm">
+                        <input type="password" id="nuevaContrasena" placeholder="Nueva contraseña (mín. 6 caracteres)" required>
+                        <input type="password" id="confirmarContrasena" placeholder="Confirmar contraseña" required>
+                        <button type="submit">Cambiar Contraseña</button>
+                    </form>
+                    <p id="paso3Message"></p>
+                </div>
+                
+                <p style="text-align: center; margin-top: 1rem;">
+                    <a href="#" onclick="volverLogin(); return false;" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">
+                        ← Volver a Login
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
+    
     <script src="script.js"></script>
+    <script src="recuperacion.js"></script>
 </body>
 </html>

@@ -32,4 +32,12 @@ const esAdmin = (req, res, next) => {
     next();
 };
 
-module.exports = { verificarToken, esAdmin };
+// Middleware para restringir solo a Pacientes
+const esPaciente = (req, res, next) => {
+    if (req.usuario.rol !== 'paciente') {
+        return res.status(403).json({ message: "Acceso prohibido. Se requiere rol de Paciente." });
+    }
+    next();
+};
+
+module.exports = { verificarToken, esAdmin, esPaciente };

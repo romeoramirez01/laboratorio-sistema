@@ -12,7 +12,10 @@ async function main(){
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       rol TEXT NOT NULL DEFAULT 'paciente',
-      created_at TIMESTAMP DEFAULT now()
+      reset_token TEXT,
+      reset_token_expires TIMESTAMP,
+      created_at TIMESTAMP DEFAULT now(),
+      updated_at TIMESTAMP DEFAULT now()
     )`);
     console.log('Tabla usuarios creada/confirmada');
 
@@ -62,6 +65,19 @@ async function main(){
       created_at TIMESTAMP DEFAULT now()
     )`);
     console.log('Tabla resultados_examenes creada/confirmada');
+
+    // 8) Crear tabla de citas/consultas
+    await pool.query(`CREATE TABLE IF NOT EXISTS citas (
+      id SERIAL PRIMARY KEY,
+      paciente_id INTEGER NOT NULL REFERENCES pacientes(id) ON DELETE CASCADE,
+      fecha_cita DATE NOT NULL,
+      hora_cita TIME NOT NULL,
+      motivo TEXT,
+      estado TEXT DEFAULT 'pendiente',
+      notas_doctor TEXT,
+      created_at TIMESTAMP DEFAULT now()
+    )`);
+    console.log('Tabla citas creada/confirmada');
 
     // 7) Seed: algunos exámenes comunes si no existen
     const exams = [

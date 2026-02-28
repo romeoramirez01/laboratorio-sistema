@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Laboratorio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <h2>🔧 Panel de Administración</h2>
+        <div>
+            <span id="adminName">Admin</span>
+            <button onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </nav>
+    
+    <div id="content" style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+        <h3>Gestión de Usuarios</h3>
+        
+        <!-- Sección para crear nuevo usuario -->
+        <section style="margin-top:1rem; padding:1rem; border:1px solid #e1e1e1; background:#fff; border-radius:8px;">
+            <h4>Crear Nuevo Usuario</h4>
+            <form id="crearUsuarioForm" style="display: grid; gap: 1rem; max-width: 500px;">
+                <input type="text" id="nombreUsuario" placeholder="Nombre completo" required />
+                <input type="email" id="emailUsuario" placeholder="Correo electrónico" required />
+                <input type="password" id="passwordUsuario" placeholder="Contraseña temporal" required />
+                <select id="rolUsuario" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">-- Seleccionar Rol --</option>
+                    <option value="paciente">Paciente</option>
+                    <option value="admin">Administrador</option>
+                    <option value="doctor">Doctor</option>
+                </select>
+                <button type="submit" style="padding: 0.75rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Crear Usuario
+                </button>
+            </form>
+            <div id="crearUsuarioMessage" style="margin-top:0.5rem;color:#333;"></div>
+        </section>
+
+        <!-- Sección de listar usuarios -->
+        <section style="margin-top:2rem; padding:1rem; border:1px solid #e1e1e1; background:#fff; border-radius:8px;">
+            <h4>Usuarios Registrados</h4>
+            <div id="usuariosLista" style="margin-top: 1rem;">
+                <p style="color: #999;"><em>Cargando usuarios...</em></p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Verificar si el usuario está autenticado como admin
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.rol !== 'admin') {
+            window.location.href = '/index.html';
+        }
+
+        document.getElementById('adminName').innerText = `Admin: ${user.nombre}`;
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function logout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                localStorage.clear();
+                window.location.href = '/index.html';
+            }
+        }
+
+        // Cargar usuarios
+        async function cargarUsuarios() {
+            try {
+                const res = await fetch('/api/admin/usuarios', {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                const body = await res.json();
+                
+                if (res.ok && body.usuarios) {
+                    let html = '';
+                    body.usuarios.forEach((u, idx) => {
+                        html += `
+                            <div style="margin-bottom: 1rem; padding: 1rem; background: #f9f9f9; border-left: 4px solid #667eea; border-radius: 4px;">
+                                <strong>${u.nombre}</strong> (${u.rol})<br>
+                                <small>📧 ${u.email}</small><br>
+                                <small>📅 Creado: ${new Date(u.created_at).toLocaleDateString()}</small>
+                                <button onclick="eliminarUsuario(${u.id})" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                    Eliminar
+                                </button>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('usuariosLista').innerHTML = html || '<p>Sin usuarios registrados</p>';
+                } else {
+                    document.getElementById('usuariosLista').innerHTML = '<p>Error al cargar usuarios</p>';
+                }
+            } catch(err) {
+                document.getElementById('usuariosLista').innerHTML = '<p>Error de conexión</p>';
+            }
+        }
+
+        // Crear usuario
+        document.getElementById('crearUsuarioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                nombre: document.getElementById('nombreUsuario').value,
+                email: document.getElementById('emailUsuario').value,
+                password: document.getElementById('passwordUsuario').value,
+                rol: document.getElementById('rolUsuario').value
+            };
+            
+            const messageEl = document.getElementById('crearUsuarioMessage');
+            
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const body = await res.json();
+                
+                if (res.ok) {
+                    messageEl.innerText = '✓ ' + body.message;
+                    messageEl.style.color = '#27ae60';
+                    document.getElementById('crearUsuarioForm').reset();
+                    setTimeout(() => {
+                        cargarUsuarios();
+                        messageEl.innerText = '';
+                    }, 1500);
+                } else {
+                    messageEl.innerText = '✗ ' + (body.message || 'Error al crear usuario');
+                    messageEl.style.color = '#e74c3c';
+                }
+            } catch (err) {
+                messageEl.innerText = '✗ Error de conexión';
+                messageEl.style.color = '#e74c3c';
+            }
+        });
+
+        // Eliminar usuario (opcional - requiere implementar en backend)
+        async function eliminarUsuario(usuarioId) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este usuario?')) return;
+            
+            try {
+                const res = await fetch(`/api/admin/usuarios/${usuarioId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                
+                if (res.ok) {
+                    alert('Usuario eliminado exitosamente');
+                    cargarUsuarios();
+                } else {
+                    alert('Error al eliminar usuario');
+                }
+            } catch(err) {
+                alert('Error de conexión');
+            }
+        }
+
+        // Cargar usuarios al iniciar
+        cargarUsuarios();
+    </script>
+</body>
+</html>

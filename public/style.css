@@ -117,3 +117,127 @@ nav button:hover {
     color: #666;
     line-height: 1.6;
 }
+
+/* Dashboard Components */
+.card {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #e1e1e1;
+    background: #fff;
+    border-radius: 6px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.form input,
+.form textarea,
+.form select {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form button {
+    background: #667eea;
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.form button:hover {
+    background: #5568d3;
+}
+
+.message {
+    margin-top: 0.5rem;
+    padding: 0.8rem;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.info {
+    margin-top: 0.5rem;
+    color: #007bff;
+    font-size: 0.9rem;
+}
+
+.search-results {
+    margin-top: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.search-box {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.search-box button {
+    padding: 0.8rem 1.2rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.search-box button:hover {
+    background: #5568d3;
+}
+
+.record-item {
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: #f0f0f0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.btn-export {
+    padding: 0.6rem 1rem;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.btn-export:hover {
+    background: #229954;
+}
+
+.btn-admin {
+    background: #ff9800;
+    margin-right: 0.5rem;
+}
+
+.btn-admin:hover {
+    background: #e68a00;
+}
